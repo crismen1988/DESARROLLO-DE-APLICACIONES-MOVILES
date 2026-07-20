@@ -1,0 +1,76 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Rol {
+  ADMIN
+  TURISTA
+  PROVEEDOR
+}
+
+model Usuario {
+  id        Int      @id @default(autoincrement())
+  nombre    String
+  email     String   @unique
+  password  String
+  rol       Rol      @default(TURISTA)
+  createdAt DateTime @default(now())
+
+  puntosInteres PuntoInteres[]
+  resenas       Resena[]
+  favoritos     Favorito[]
+}
+
+model Categoria {
+  id     Int    @id @default(autoincrement())
+  nombre String @unique
+
+  puntosInteres PuntoInteres[]
+}
+
+model PuntoInteres {
+  id          Int      @id @default(autoincrement())
+  nombre      String
+  descripcion String
+  direccion   String
+  latitud     Float
+  longitud    Float
+  createdAt   DateTime @default(now())
+
+  categoriaId Int
+  usuarioId   Int
+
+  categoria Categoria @relation(fields: [categoriaId], references: [id])
+  usuario   Usuario   @relation(fields: [usuarioId], references: [id])
+
+  resenas   Resena[]
+  favoritos Favorito[]
+}
+
+model Resena {
+  id           Int      @id @default(autoincrement())
+  comentario   String
+  calificacion Int
+  createdAt    DateTime @default(now())
+
+  usuarioId Int
+  puntoId   Int
+
+  usuario Usuario      @relation(fields: [usuarioId], references: [id])
+  punto   PuntoInteres @relation(fields: [puntoId], references: [id])
+}
+
+model Favorito {
+  usuarioId Int
+  puntoId   Int
+
+  usuario Usuario      @relation(fields: [usuarioId], references: [id])
+  punto   PuntoInteres @relation(fields: [puntoId], references: [id])
+
+  @@id([usuarioId, puntoId])
+}
