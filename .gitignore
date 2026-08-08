@@ -1,11 +1,27 @@
+# Dependencias
 node_modules/
+
+# Archivos generados por compilación y pruebas
 dist/
 coverage/
 
+# Variables de entorno y credenciales
 .env
 .env.*
 !.env.example
 
+# Cliente generado por Prisma
+backend/src/generated/prisma/
+
+# Archivos auxiliares generados para agentes de IA
+backend/.agents/
+backend/.claude/
+backend/.windsurf/
+backend/skills-lock.json
+
+# Registros
 *.log
+
+# Archivos del sistema operativo
 .DS_Store
 Thumbs.db
