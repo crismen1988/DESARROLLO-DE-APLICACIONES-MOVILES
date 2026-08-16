@@ -21,5 +21,75 @@ model Categoria {
   creadaEn      DateTime @default(now()) @map("creada_en")
   actualizadaEn DateTime @updatedAt @map("actualizada_en")
 
+  puntosInteres PuntoInteres[]
+
   @@map("categorias")
+}
+
+enum Rol {
+  TURISTA
+  PROVEEDOR
+  ADMINISTRADOR
+}
+
+enum EstadoPuntoInteres {
+  ACTIVO
+  INACTIVO
+}
+
+model Usuario {
+  id           Int      @id @default(autoincrement())
+  correo       String   @unique @db.VarChar(180)
+  nombre       String   @db.VarChar(120)
+  passwordHash String   @map("password_hash") @db.VarChar(255)
+  rol          Rol      @default(TURISTA)
+  activo       Boolean  @default(true)
+  creadoEn     DateTime @default(now()) @map("creado_en")
+  actualizadoEn DateTime @updatedAt @map("actualizado_en")
+
+  resenas Resena[]
+
+  @@map("usuarios")
+}
+
+model PuntoInteres {
+  id                  Int                  @id @default(autoincrement())
+  nombre              String               @db.VarChar(150)
+  descripcion         String               @db.Text
+  direccion           String?              @db.VarChar(250)
+  latitud             Float
+  longitud            Float
+  telefono            String?              @db.VarChar(30)
+  precioMinimo        Decimal?             @map("precio_minimo") @db.Decimal(10, 2)
+  precioMaximo        Decimal?             @map("precio_maximo") @db.Decimal(10, 2)
+  calificacionPromedio Float                @default(0) @map("calificacion_promedio")
+  totalResenas        Int                  @default(0) @map("total_resenas")
+  estado              EstadoPuntoInteres   @default(ACTIVO)
+  categoriaId         Int                  @map("categoria_id")
+  creadoEn            DateTime             @default(now()) @map("creado_en")
+  actualizadoEn       DateTime             @updatedAt @map("actualizado_en")
+
+  categoria Categoria @relation(fields: [categoriaId], references: [id], onDelete: Restrict)
+  resenas   Resena[]
+
+  @@index([categoriaId, estado])
+  @@index([latitud, longitud])
+  @@map("puntos_interes")
+}
+
+model Resena {
+  id             Int      @id @default(autoincrement())
+  calificacion   Int
+  comentario     String?  @db.VarChar(500)
+  usuarioId      Int      @map("usuario_id")
+  puntoInteresId Int      @map("punto_interes_id")
+  creadoEn       DateTime @default(now()) @map("creado_en")
+  actualizadoEn  DateTime @updatedAt @map("actualizado_en")
+
+  usuario      Usuario      @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  puntoInteres PuntoInteres @relation(fields: [puntoInteresId], references: [id], onDelete: Cascade)
+
+  @@unique([usuarioId, puntoInteresId])
+  @@index([puntoInteresId])
+  @@map("resenas")
 }

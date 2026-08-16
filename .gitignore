@@ -25,3 +25,4 @@ backend/skills-lock.json
 # Archivos del sistema operativo
 .DS_Store
 Thumbs.db
+.npm-cache/

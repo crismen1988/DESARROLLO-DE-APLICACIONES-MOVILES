@@ -1,0 +1,128 @@
+﻿import {
+  IonButton,
+  IonContent,
+  IonHeader,
+  IonIcon,
+  IonInput,
+  IonItem,
+  IonLabel,
+  IonPage,
+  IonText,
+  IonTitle,
+  IonToolbar,
+  IonSpinner,
+  useIonViewWillEnter,
+} from '@ionic/react';
+import { CapacitorHttp } from '@capacitor/core';
+import { useState } from 'react';
+import { useHistory } from 'react-router-dom';
+import { eyeOffOutline, eyeOutline } from 'ionicons/icons';
+import './Login.css';
+
+type LoginResponse = {
+  usuario?: { nombre?: string };
+  accessToken?: string;
+};
+
+type ApiError = { message?: string | string[] };
+
+const Login: React.FC = () => {
+  const history = useHistory();
+  const [correo, setCorreo] = useState('');
+  const [password, setPassword] = useState('');
+  const [mostrarPassword, setMostrarPassword] = useState(false);
+  const [error, setError] = useState('');
+  const [cargando, setCargando] = useState(false);
+
+  useIonViewWillEnter(() => {
+    setCorreo('');
+    setPassword('');
+    setMostrarPassword(false);
+    setError('');
+  });
+
+  const iniciarSesion = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setError('');
+    setCargando(true);
+
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL;
+      const response = await CapacitorHttp.post({
+        url: `${apiUrl}/auth/login`,
+        headers: { 'Content-Type': 'application/json' },
+        data: { correo: correo.trim(), password },
+      });
+
+      const data = response.data as LoginResponse & ApiError;
+      if (response.status < 200 || response.status >= 300 || !data.accessToken) {
+        const message = Array.isArray(data.message) ? data.message.join(', ') : data.message;
+        throw new Error(message ?? `No se pudo iniciar sesiÃ³n (HTTP ${response.status})`);
+      }
+
+      localStorage.setItem('banostour_access_token', data.accessToken);
+      localStorage.setItem('banostour_usuario', JSON.stringify(data.usuario ?? {}));
+      history.replace('/home');
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Error al iniciar sesiÃ³n');
+    } finally {
+      setCargando(false);
+    }
+  };
+
+  return (
+    <IonPage>
+      <IonHeader>
+        <IonToolbar>
+          <IonTitle>Iniciar sesiÃ³n</IonTitle>
+        </IonToolbar>
+      </IonHeader>
+      <IonContent fullscreen>
+        <form className="login-content" onSubmit={(event) => void iniciarSesion(event)}>
+          <h1>Bienvenido</h1>
+          <p>Ingresa a tu cuenta para continuar en BaÃ±osTour.</p>
+
+          <IonItem>
+            <IonLabel position="stacked">Correo electrÃ³nico</IonLabel>
+            <IonInput
+              type="email"
+              value={correo}
+              required
+              autocomplete="email"
+              placeholder="tu@correo.com"
+              onIonInput={(event) => setCorreo(event.detail.value ?? '')}
+            />
+          </IonItem>
+
+          <IonItem>
+            <IonLabel position="stacked">ContraseÃ±a</IonLabel>
+            <IonInput
+              type={mostrarPassword ? 'text' : 'password'}
+              value={password}
+              required
+              minlength={8}
+              autocomplete="current-password"
+              placeholder="MÃ­nimo 8 caracteres"
+              onIonInput={(event) => setPassword(event.detail.value ?? '')}
+            />
+          </IonItem>
+
+          {error && <IonText color="danger"><p className="login-error">{error}</p></IonText>}
+
+          <IonButton expand="block" type="submit" disabled={cargando}>
+            {cargando ? <IonSpinner name="crescent" /> : 'Entrar'}
+          </IonButton>
+          <IonButton fill="clear" expand="block" type="button" onClick={() => history.push('/register')}>
+            Crear una cuenta
+          </IonButton>
+          <IonButton fill="clear" expand="block" type="button" onClick={() => history.push('/welcome')}>
+            Volver
+          </IonButton>
+        </form>
+      </IonContent>
+    </IonPage>
+  );
+};
+
+export default Login;
+

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">BañosTour</string>
+    <string name="title_activity_main">BañosTour</string>
+    <string name="package_name">com.banostour.app</string>
+    <string name="custom_url_scheme">com.banostour.app</string>
+</resources>

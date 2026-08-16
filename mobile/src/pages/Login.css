@@ -1,0 +1,48 @@
+.login-content {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 44px 24px 24px;
+}
+
+.login-content h1 {
+  margin-bottom: 8px;
+}
+
+.login-content > p {
+  color: var(--ion-color-medium);
+  margin-bottom: 28px;
+}
+
+.login-content ion-item {
+  margin-bottom: 16px;
+  --padding-start: 0;
+  --inner-padding-end: 0;
+}
+
+.login-content ion-button {
+  margin-top: 18px;
+}
+
+.login-error {
+  margin: 12px 0 0;
+}
+
+.login-success {
+  margin: 12px 0 0;
+}
+
+.password-toggle {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+.login-password-input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--ion-text-color);
+  font: inherit;
+  padding: 8px 0;
+}
