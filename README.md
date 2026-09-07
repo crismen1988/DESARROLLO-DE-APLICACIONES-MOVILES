@@ -32,7 +32,6 @@ La API usa el puerto 3000, Vite 5173, PostgreSQL 5433, Redis 6380 y pgAdmin 5050
 - [Backend y API](backend/README.md).
 - [Cliente móvil y navegación](mobile/README.md).
 - [Verificación y limitaciones de esta entrega](docs/VERIFICACION-ENTORNO.md).
-- [Preparación de la grabación](docs/GUIA-VIDEO-VERSION2.md).
 - [Especificaciones y tareas](backend/spec/README.md).
 - [Aclaraciones sobre el documento académico Word](docs/ESTADO-DOCUMENTO-ACADEMICO.md).
 
