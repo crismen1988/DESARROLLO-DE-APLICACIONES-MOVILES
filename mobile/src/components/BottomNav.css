@@ -1,0 +1,36 @@
+.banos-bottom-footer {
+  background: var(--banos-cream);
+  border-top: 1px solid #dcebe6;
+  box-shadow: 0 -4px 20px rgb(23 59 67 / 5%);
+}
+.banos-bottom-nav {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  max-width: 680px;
+  margin: auto;
+  padding: 6px 8px calc(6px + var(--ion-safe-area-bottom, 0px));
+}
+.banos-bottom-nav a {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 50px;
+  border-radius: 14px;
+  color: var(--banos-muted);
+  text-decoration: none;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+.banos-bottom-nav ion-icon {
+  font-size: 1.35rem;
+}
+.banos-bottom-nav .is-active {
+  background: var(--banos-mint);
+  color: var(--ion-color-primary);
+}
+.banos-bottom-nav a:focus-visible {
+  outline: 2px solid var(--ion-color-primary);
+  outline-offset: -2px;
+}

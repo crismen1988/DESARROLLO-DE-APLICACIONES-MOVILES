@@ -1,0 +1,51 @@
+.place-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 8px 7px 15px;
+  border: 1px solid #d5e5df;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgb(23 59 67 / 6%);
+}
+.place-search > ion-icon {
+  flex-shrink: 0;
+  color: var(--banos-muted);
+  font-size: 1.2rem;
+}
+.place-search input {
+  width: 100%;
+  min-width: 0;
+  padding: 10px 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--banos-deep);
+  font: inherit;
+  font-size: 0.92rem;
+}
+.place-search input::placeholder {
+  color: var(--banos-muted);
+  opacity: 1;
+}
+.place-search button {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 13px;
+  background: var(--ion-color-primary);
+  color: white;
+  font-size: 1.25rem;
+  cursor: pointer;
+}
+.place-search:focus-within {
+  border-color: var(--ion-color-primary);
+  box-shadow: 0 0 0 3px rgb(15 118 110 / 12%);
+}
+.place-search button:focus-visible {
+  outline: 2px solid var(--banos-deep);
+  outline-offset: 3px;
+}

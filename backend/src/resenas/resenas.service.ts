@@ -1,11 +1,14 @@
 import {
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificacionesService } from '../notificaciones/notificaciones.service';
 import { CrearResenaDto } from './dto/crear-resena.dto';
+import { ActualizarResenaDto } from './dto/actualizar-resena.dto';
+import type { Rol } from '../generated/prisma/enums';
 
 @Injectable()
 export class ResenasService {
@@ -60,5 +63,64 @@ export class ResenasService {
       mensaje: `Tu reseña para ${punto.nombre} fue registrada correctamente.`,
     });
     return resena;
+  }
+
+  async actualizar(
+    usuarioId: number,
+    rol: Rol,
+    resenaId: number,
+    datos: ActualizarResenaDto,
+  ) {
+    const resena = await this.prisma.resena.findUnique({
+      where: { id: resenaId },
+      select: { usuarioId: true, puntoInteresId: true },
+    });
+    if (!resena) throw new NotFoundException('La reseña no existe');
+    if (resena.usuarioId !== usuarioId && rol !== 'ADMINISTRADOR') {
+      throw new ForbiddenException('No puedes modificar esta reseña');
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      const actualizada = await tx.resena.update({
+        where: { id: resenaId },
+        data: datos,
+      });
+      await this.recalcularPromedio(tx, resena.puntoInteresId);
+      return actualizada;
+    });
+  }
+
+  async eliminar(usuarioId: number, rol: Rol, resenaId: number): Promise<void> {
+    const resena = await this.prisma.resena.findUnique({
+      where: { id: resenaId },
+      select: { usuarioId: true, puntoInteresId: true },
+    });
+    if (!resena) throw new NotFoundException('La reseña no existe');
+    if (resena.usuarioId !== usuarioId && rol !== 'ADMINISTRADOR') {
+      throw new ForbiddenException('No puedes eliminar esta reseña');
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.resena.delete({ where: { id: resenaId } });
+      await this.recalcularPromedio(tx, resena.puntoInteresId);
+    });
+  }
+
+  private async recalcularPromedio(
+    tx: Pick<PrismaService, 'resena' | 'puntoInteres'>,
+    puntoInteresId: number,
+  ): Promise<void> {
+    const agregado = await tx.resena.aggregate({
+      where: { puntoInteresId },
+      _avg: { calificacion: true },
+      _count: { _all: true },
+    });
+    await tx.puntoInteres.update({
+      where: { id: puntoInteresId },
+      data: {
+        calificacionPromedio: agregado._avg.calificacion ?? 0,
+        totalResenas: agregado._count._all,
+      },
+    });
   }
 }

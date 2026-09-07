@@ -1,0 +1,4 @@
+.recovery-page { position: relative; }
+.recovery-content { max-width: 620px; margin-top: 16vh; }
+.recovery-content h2 { font-size: clamp(2rem, 9vw, 3.4rem); }
+.recovery-content .login-submit::part(native) { letter-spacing: 0.02em; }

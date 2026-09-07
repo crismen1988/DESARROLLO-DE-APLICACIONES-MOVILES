@@ -1,6 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CategoriasController } from './categorias.controller';
 import { CategoriasService } from './categorias.service';
+import { AuthGuard } from '../auth/auth.guard';
+import { RolesGuard } from '../auth/roles.guard';
 
 describe('CategoriasController', () => {
   let controller: CategoriasController;
@@ -20,7 +22,12 @@ describe('CategoriasController', () => {
           },
         },
       ],
-    }).compile();
+    })
+      .overrideGuard(AuthGuard)
+      .useValue({ canActivate: jest.fn(() => true) })
+      .overrideGuard(RolesGuard)
+      .useValue({ canActivate: jest.fn(() => true) })
+      .compile();
 
     controller = module.get<CategoriasController>(CategoriasController);
   });

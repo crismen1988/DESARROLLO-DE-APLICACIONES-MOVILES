@@ -41,6 +41,26 @@ export class RedisService implements OnModuleDestroy {
     }
   }
 
+  async delByPrefix(prefix: string): Promise<void> {
+    try {
+      if (this.client.status === 'wait') await this.client.connect();
+      let cursor = '0';
+      do {
+        const result = await this.client.scan(
+          cursor,
+          'MATCH',
+          `${prefix}:*`,
+          'COUNT',
+          100,
+        );
+        cursor = result[0];
+        if (result[1].length > 0) await this.client.del(...result[1]);
+      } while (cursor !== '0');
+    } catch {
+      // Redis es opcional en el entorno local; la API continúa operativa.
+    }
+  }
+
   async onModuleDestroy(): Promise<void> {
     await this.client.quit();
   }

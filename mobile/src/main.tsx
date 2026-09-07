@@ -1,11 +1,13 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
+import { AuthProvider } from './auth/AuthContext';
+import { LanguageProvider } from './i18n/LanguageContext';
 
 const container = document.getElementById('root');
 const root = createRoot(container!);
 root.render(
   <React.StrictMode>
-    <App />
+    <LanguageProvider><AuthProvider><App /></AuthProvider></LanguageProvider>
   </React.StrictMode>
 );

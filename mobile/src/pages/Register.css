@@ -1,8 +1,220 @@
-.register-content { max-width: 480px; margin: 0 auto; padding: 44px 24px 24px; }
-.register-content h1 { margin-bottom: 8px; }
-.register-content > p { color: var(--ion-color-medium); margin-bottom: 28px; }
-.register-content ion-item { margin-bottom: 16px; --padding-start: 0; --inner-padding-end: 0; }
-.register-content ion-button { margin-top: 18px; }
-.register-error { margin: 12px 0 0; }
-.register-success { margin: 12px 0 0; }
-.register-password-toggle { margin-top: 0 !important; margin-bottom: 0 !important; }
+.register-page {
+  position: relative;
+  box-sizing: border-box;
+  min-height: 100dvh;
+  padding: max(16px, env(safe-area-inset-top)) 18px max(14px, env(safe-area-inset-bottom));
+  background: linear-gradient(150deg, #dff3e8 0%, #fff6d5 52%, #e9f1e4 100%);
+  color: #163b43;
+}
+
+.register-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 50px;
+  margin: -16px -18px 0;
+  padding: 10px 18px;
+  background: #183b43;
+  color: #ffffff;
+  font-size: clamp(1.45rem, 6vw, 2rem);
+  letter-spacing: -0.04em;
+}
+
+.register-brand strong { font-weight: 800; }
+
+.register-brand img {
+  width: 38px;
+  height: 38px;
+  padding: 3px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #ffffff;
+}
+
+.register-content {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 620px;
+  margin: 0 auto;
+  padding: 20px 6px 8px;
+}
+
+.register-eyebrow {
+  display: block;
+  margin-bottom: 4px;
+  color: #102c36;
+  font-size: 1rem;
+}
+
+.register-content h1 {
+  margin: 0 0 8px;
+  color: #183b43;
+  font-size: clamp(2rem, 9vw, 3.25rem);
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  line-height: 1;
+}
+
+.register-content > p {
+  margin: 0 0 22px;
+  color: #173b43;
+  font-size: clamp(1rem, 4.2vw, 1.35rem);
+  line-height: 1.35;
+}
+
+.account-type-field {
+  margin: 0 0 18px;
+  padding: 13px 14px 12px;
+  border: 1.5px solid #9dbabb;
+  border-radius: 18px;
+  background: transparent;
+}
+
+.account-type-label {
+  display: block;
+  margin-bottom: 8px;
+  color: #102c36;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.register-content ion-segment {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  --background: transparent;
+  border-radius: 15px;
+  background: linear-gradient(135deg, #dff3e8 0%, #fff6d5 52%, #e9f1e4 100%);
+}
+
+.register-content ion-segment-button {
+  min-height: 48px;
+  --color: #173b43;
+  --color-checked: #102c36;
+  --indicator-color: #0f766e;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.register-content ion-segment-button::part(native) {
+  color: #173b43;
+  font-weight: 800;
+}
+
+.register-content ion-segment-button.segment-button-checked::part(native) {
+  color: #102c36;
+}
+
+.register-content ion-segment-button.segment-button-checked::part(indicator-background) {
+  height: 4px;
+  border-radius: 999px;
+  background: #0f766e;
+}
+
+.register-account-help {
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border-left: 4px solid #e5a52d;
+  border-radius: 8px;
+  background: rgb(255 255 255 / 68%);
+  color: #526b70 !important;
+  font-size: 0.86rem;
+  line-height: 1.35;
+}
+
+.register-content ion-item {
+  box-sizing: border-box;
+  min-height: 72px;
+  margin: 0 0 14px;
+  padding: 5px 12px 3px;
+  --background: rgb(255 255 255 / 28%);
+  --color: #173b43;
+  --border-color: transparent;
+  --highlight-color-focused: #0f766e;
+  --padding-start: 0;
+  --inner-padding-end: 0;
+  border: 1.5px solid #9dbabb;
+  border-radius: 15px;
+  overflow: visible;
+  background: rgb(255 255 255 / 28%);
+}
+
+.register-content ion-item::part(native) { background: transparent; }
+
+.register-content ion-label,
+.register-content ion-label[position='stacked'] {
+  display: block !important;
+  visibility: visible !important;
+  margin: 0 0 3px;
+  color: #102c36 !important;
+  font-size: 0.9rem;
+  font-weight: 900;
+  letter-spacing: 0.01em;
+  line-height: 1.1;
+}
+
+.register-content ion-input {
+  --background: transparent;
+  --color: #173b43;
+  --placeholder-color: #5f6a6d;
+  --placeholder-opacity: 1;
+  --highlight-color: #0f766e;
+  font-size: 1.05rem;
+}
+
+.register-password-toggle {
+  align-self: center;
+  margin: 0 !important;
+  color: #176b6e;
+}
+
+.register-password-toggle ion-icon { font-size: 1.35rem; }
+
+.provider-fields {
+  margin: 4px 0 16px;
+  padding-top: 14px;
+  border-top: 1px solid #b9d4cf;
+}
+
+.register-section-title {
+  margin: 0 0 12px;
+  color: #173b43;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.register-error,
+.register-success {
+  margin: 8px 0;
+  font-size: 0.9rem;
+  line-height: 1.35;
+}
+
+.register-submit { margin: 8px 0 4px; }
+
+.register-submit::part(native) {
+  min-height: 52px;
+  border-radius: 16px;
+  background: #0f766e;
+  color: #ffffff;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  box-shadow: 0 6px 12px rgb(15 118 110 / 22%);
+}
+
+.register-login-link {
+  margin: 0;
+  color: #075564;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+@media (min-width: 600px) {
+  .register-page { padding-left: 32px; padding-right: 32px; }
+  .register-brand { margin-left: -32px; margin-right: -32px; }
+}

@@ -1,8 +1,12 @@
 # BañosTour Mobile
 
+Corte documental: **2026-09-06**, rama `banostour_version2`. Consultar [verificación actual](../docs/VERIFICACION-ENTORNO.md).
+
 Aplicación móvil multiplataforma para consultar servicios turísticos de Baños de Agua Santa. El cliente está construido con Ionic React, TypeScript y Capacitor, y consume la API desarrollada en NestJS.
 
 ## Stack y versiones
+
+Las versiones siguientes describen el entorno registrado previamente; las dependencias reproducibles están en `package-lock.json`. Java, SDK y dispositivo deben comprobarse en cada equipo.
 
 - Node.js: v24.19.0
 - npm: 11.19.0
@@ -16,6 +20,8 @@ Aplicación móvil multiplataforma para consultar servicios turísticos de Baño
 La elección de Ionic React con TypeScript y Capacitor permite reutilizar la interfaz React en navegador y Android, mantener tipado estático y acceder al runtime nativo sin duplicar la lógica principal.
 
 ## Estructura principal
+
+Además de las pantallas iniciales del esquema, `src/pages/` incluye TouristHome, Catalog, Favorites, Profile, AdminDashboard, ForgotPassword y ResetPassword. `src/auth/` concentra la sesión y rutas protegidas; `src/i18n/` las traducciones; `src/components/` la navegación inferior, selector de idioma y búsqueda compartida.
 
 ~~~text
 mobile/
@@ -37,7 +43,8 @@ mobile/
 Desde la carpeta mobile:
 
 ~~~powershell
-npm install --legacy-peer-deps --ignore-scripts --no-audit --no-fund
+npm ci --legacy-peer-deps
+Copy-Item .env.example .env.local
 npm run build
 npx cap sync android
 ~~~
@@ -55,7 +62,7 @@ java -version
 
 Inicialmente se configuró un emulador Android Pixel 7. Durante las pruebas, el emulador resultó demasiado lento para el ciclo de desarrollo y la interacción con la aplicación, por lo que se optó por utilizar un teléfono físico conectado por USB.
 
-El teléfono físico es reconocido por ADB y permite ejecutar la aplicación con mejor respuesta. Su interfaz se visualiza en la PC mediante scrcpy:
+En el trabajo previo se utilizó un teléfono físico reconocido por ADB. En esta revisión no se volvió a validar la conexión del dispositivo. Su interfaz se visualiza en la PC mediante scrcpy:
 
 ~~~powershell
 & "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe" devices
@@ -122,15 +129,21 @@ El backend se ejecuta localmente sin HTTPS. La configuración Android permite tr
 - Inicio de sesión con correo y contraseña.
 - Mostrar y ocultar contraseña desde Login.
 - Registro con confirmación de contraseña y controles para mostrar u ocultar ambos campos.
+- Selección de cuenta turista o proveedor turístico.
+- Formulario ampliado para proveedores con RUC, razón social, nombre comercial, actividad, contacto, dirección, ciudad y sitio web opcional.
+- Los proveedores quedan pendientes de revisión administrativa después del registro.
 - Las contraseñas visibles se ocultan automáticamente después de 1.5 segundos.
 - Limpieza de correo, contraseña, error y estado del ojo al volver a Login.
 - Creación de cuentas con nombre, correo y contraseña.
 - Integración con POST /auth/login.
 - Integración con POST /auth/registro.
-- Almacenamiento local del token de acceso.
+- Tokens de acceso y refresh únicamente en memoria del contexto React; recargar la app requiere iniciar sesión nuevamente. La renovación automática aún no está conectada en el cliente.
 - Cierre de sesión.
 - Consulta del backend desde Home.
-- Navegación entre Welcome, Login, Register y Home.
+- Navegación por bienvenida, login, registro, recuperación, inicio por rol, catálogo, favoritos, perfil y administración.
+- Selector de idioma español/inglés y correo recordado en localStorage.
+- Recuperación y restablecimiento de contraseña mediante la API y SMTP configurado.
+- Administración básica de cuentas y consulta de reportes; los botones de categorías y creación de contenido todavía no ejecutan acciones.
 
 ## Recarga en caliente
 
@@ -150,19 +163,44 @@ npx cap sync android
 npx cap run android --target <ID_DEL_DISPOSITIVO>
 ~~~
 
-## Verificaciones actuales
+## Verificaciones de la versión 2
 
-- npx tsc --noEmit: aprobado.
+- `npm run build`: aprobado, incluye TypeScript y Vite con minificación; avisa de bundles mayores de 500 kB.
 - ESLint del frontend: aprobado.
-- npx vite build --minify false: aprobado.
-- Capacitor local: 8.5.0.
+- Cypress de autenticación, perfil e inicio: 3 specs y 9 pruebas aprobadas el 2026-09-06 con API simulada.
+- Capacitor declarado: 8.5.0; no se recompiló APK en este corte.
 - El teléfono físico se utiliza como destino principal y su interfaz se visualiza en la PC mediante scrcpy.
 - La comprobación de conectividad requiere que PostgreSQL, Redis y el backend estén activos.
 
 ## Flujo de navegación
 
 ~~~text
-Bienvenida → Iniciar sesión → Pantalla principal
-                     ↓
-              Crear una cuenta → Pantalla principal
+Bienvenida → Login → Inicio por rol
+                ↓           ↓
+             Registro    Explorar / Favoritos / Perfil
+                ↓                          ↓
+              Login                   Cerrar sesión
+                ↓
+       Recuperar / Restablecer contraseña
 ~~~
+
+## Perfil y actividad turística
+
+El perfil mantiene el degradado verde y crema, las tarjetas redondeadas y los acentos coral de BañosTour. Incluye identidad, biografía, estadísticas reales y pestañas de favoritos y reseñas. Las cuentas de prestador también muestran sus lugares activos, reseñas recibidas y valoración promedio. La edición se abre en un modal; cancelar descarta los cambios pendientes, incluida la foto.
+
+La navegación inferior compartida conecta Inicio, Explorar, Favoritos y Perfil. Correo, dirección y fecha de nacimiento se consultan dentro de la edición y no aparecen en la cabecera.
+
+Datos utilizados:
+- `GET /usuarios/perfil`: datos de la cuenta autenticada y estadísticas.
+- `GET /usuarios/perfil/actividad?tipo=favoritos|resenas|lugares&pagina=1`: actividad de esa cuenta, en páginas de 12 elementos y con imagen principal del lugar.
+- `PATCH /usuarios/perfil`: edición del perfil, incluida dirección y borrado de fecha/edad mediante `null`.
+
+Pruebas de interfaz con datos simulados: `npx cypress run --spec cypress/e2e/profile.cy.ts`. Las pruebas de API con base de datos local están en `backend/test/profile.e2e-spec.ts` y crean y eliminan sus propias fixtures. Para compilar para el emulador, definir `VITE_API_URL=http://10.0.2.2:3000` en el proceso de compilación, ejecutar `npm run build` y `npx cap sync android`.
+
+## Inicio del turista
+
+El inicio del turista utiliza la navegación inferior como acceso principal a Inicio, Explorar, Favoritos y Perfil. Cerrar sesión sigue disponible en Perfil → Ajustes. Se han retirado los accesos duplicados de la cabecera y las tarjetas que repetían esa navegación.
+
+La búsqueda del inicio y las categorías abren el catálogo con filtros en la URL (`busqueda`, `categoriaId`). El catálogo consulta los filtros y la paginación directamente en la API, permite limpiar los filtros y recorrer todas las páginas. La agenda del inicio consume `GET /eventos` y permite expandir cada evento para ver descripción, ubicación y fechas en la zona horaria de Ecuador; no muestra eventos ficticios si la lista está vacía.
+
+Verificación: `npx cypress run --spec cypress/e2e/tourist-home.cy.ts,cypress/e2e/profile.cy.ts`. Las pruebas de interfaz usan datos simulados, sin crear contenido en la base de datos.

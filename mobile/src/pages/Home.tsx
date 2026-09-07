@@ -2,56 +2,40 @@ import {
   IonButton,
   IonContent,
   IonHeader,
+  IonIcon,
   IonPage,
-  IonSpinner,
-  IonText,
   IonTitle,
   IonToolbar,
 } from '@ionic/react';
-import { CapacitorHttp } from '@capacitor/core';
-import { useEffect, useState } from 'react';
+import { arrowForwardOutline, businessOutline, calendarOutline, heartOutline, locationOutline, personCircleOutline, shieldCheckmarkOutline, sparklesOutline } from 'ionicons/icons';
 import { useHistory } from 'react-router-dom';
+import { Redirect } from 'react-router-dom';
+import { useAuth } from '../auth/useAuth';
 import './Home.css';
+import BottomNav from '../components/BottomNav';
+import { useLanguage } from '../i18n/useLanguage';
+import TouristHome from './TouristHome';
 
 const Home: React.FC = () => {
   const history = useHistory();
-  const [respuesta, setRespuesta] = useState('Sin conexión comprobada');
-  const [cargando, setCargando] = useState(false);
+  const { usuario, cerrarSesion } = useAuth();
+  const { t } = useLanguage();
+  const esProveedor = usuario?.rol === 'PROVEEDOR';
+  const esAdministrador = usuario?.rol === 'ADMINISTRADOR';
 
-  const consultarBackend = async () => {
-    setCargando(true);
-    try {
-      const apiUrl = import.meta.env.VITE_API_URL;
-      const response = await CapacitorHttp.get({ url: `${apiUrl}/` });
-      if (response.status < 200 || response.status >= 300) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-      const data = response.data as { message?: string };
-      setRespuesta(data.message ?? 'Respuesta recibida correctamente');
-    } catch (error) {
-      setRespuesta(
-        `No se pudo conectar con la API: ${error instanceof Error ? error.message : 'error desconocido'}`,
-      );
-    } finally {
-      setCargando(false);
-    }
-  };
-
-  useEffect(() => {
-    void consultarBackend();
-  }, []);
+  if (esAdministrador) return <Redirect to="/admin" />;
+  if (!esProveedor) return <TouristHome />;
 
   return (
-    <IonPage>
-      <IonHeader>
+    <IonPage className="home-page">
+      <IonHeader className="home-header">
         <IonToolbar>
-          <IonTitle>BañosTour</IonTitle>
-          <IonButton slot="end" fill="clear" onClick={() => {
-            localStorage.removeItem('banostour_access_token');
-            localStorage.removeItem('banostour_usuario');
-            history.replace('/welcome');
-          }}>
-            Salir
+          <IonTitle><span className="home-wordmark"><strong>Baños</strong>Tour</span></IonTitle>
+          <IonButton className="home-profile-button" slot="end" fill="clear" onClick={() => history.push('/perfil')} aria-label={t('profile')}>
+            <IonIcon icon={personCircleOutline} />
+          </IonButton>
+          <IonButton slot="end" fill="clear" onClick={() => void cerrarSesion().finally(() => history.replace('/welcome'))}>
+            {t('logout')}
           </IonButton>
         </IonToolbar>
       </IonHeader>
@@ -61,17 +45,40 @@ const Home: React.FC = () => {
             <IonTitle size="large">BañosTour</IonTitle>
           </IonToolbar>
         </IonHeader>
-        <div className="home-content">
-          <h1>Descubre Baños</h1>
-          <p>Aplicación turística multiplataforma.</p>
-          <IonText color={respuesta.startsWith('No se') ? 'danger' : 'success'}>
-            <p><strong>Respuesta de la API:</strong> {respuesta}</p>
-          </IonText>
-          <IonButton onClick={() => void consultarBackend()} disabled={cargando}>
-            {cargando ? <IonSpinner name="crescent" /> : 'Probar conexión'}
-          </IonButton>
+        <div className={`home-content ${esProveedor || esAdministrador ? 'provider-dashboard' : 'tourist-dashboard'}`}>
+          <div className="home-welcome-row">
+            <div>
+              <span className="home-eyebrow">{esAdministrador ? t('adminSpace') : esProveedor ? t('providerSpace') : t('touristSpace')}</span>
+              <h1>{t('greeting')}, {usuario?.nombre}</h1>
+              <p>{esAdministrador ? t('adminSpace') : esProveedor ? t('providerSubtitle') : t('touristSubtitle')}</p>
+            </div>
+            <div className="home-avatar"><IonIcon icon={esProveedor || esAdministrador ? businessOutline : sparklesOutline} /></div>
+          </div>
+
+          <div className="home-hero-card">
+            <div className="home-hero-icon"><IonIcon icon={esProveedor || esAdministrador ? businessOutline : locationOutline} /></div>
+            <div><strong>{esProveedor || esAdministrador ? t('providerPrompt') : t('touristPrompt')}</strong><span>{t('appDescription')}</span></div>
+          </div>
+
+          <div className="home-action-grid">
+            <button className="home-action-card home-action-primary" type="button" onClick={() => history.push('/catalogo')}>
+              <IonIcon icon={esProveedor || esAdministrador ? businessOutline : locationOutline} /><span>{esProveedor || esAdministrador ? t('viewCatalog') : t('discoverPlaces')}</span><IonIcon className="action-arrow" icon={arrowForwardOutline} />
+            </button>
+            <button className="home-action-card" type="button" onClick={() => history.push(esProveedor || esAdministrador ? '/perfil' : '/favoritos')}>
+              <IonIcon icon={esProveedor || esAdministrador ? shieldCheckmarkOutline : heartOutline} /><span>{esProveedor || esAdministrador ? t('verificationStatus') : t('savedPlaces')}</span><IonIcon className="action-arrow" icon={arrowForwardOutline} />
+            </button>
+            <button className="home-action-card home-action-muted" type="button" disabled>
+              <IonIcon icon={calendarOutline} /><span>{esProveedor || esAdministrador ? t('manageEvents') : t('upcomingEvents')}</span><IonIcon className="action-arrow" icon={arrowForwardOutline} />
+            </button>
+          </div>
+
+          {esProveedor || esAdministrador ? (
+            <div className="home-verification"><IonIcon icon={shieldCheckmarkOutline} /><div><strong>{t('verificationStatus')}</strong><span>{esAdministrador ? t('verifiedProvider') : t('pendingVerification')}</span></div></div>
+          ) : null}
+
         </div>
       </IonContent>
+      <BottomNav />
     </IonPage>
   );
 };

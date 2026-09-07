@@ -1,43 +1,35 @@
-import {
-  IonButton,
-  IonContent,
-  IonHeader,
-  IonPage,
-  IonTitle,
-  IonToolbar,
-} from '@ionic/react';
+import { IonButton, IonContent, IonPage } from '@ionic/react';
 import { useHistory } from 'react-router-dom';
 import './Welcome.css';
+import LanguageSelector from '../components/LanguageSelector';
+import { useLanguage } from '../i18n/useLanguage';
 
 const Welcome: React.FC = () => {
   const history = useHistory();
+  const { t } = useLanguage();
 
   return (
     <IonPage>
-      <IonHeader>
-        <IonToolbar>
-          <IonTitle>BañosTour</IonTitle>
-        </IonToolbar>
-      </IonHeader>
       <IonContent fullscreen>
         <div className="welcome-content">
-          <div className="welcome-card">
+          <div className="welcome-overlay" />
+          <LanguageSelector />
+          <div className="welcome-brand" aria-label="BañosTour">
             <img
-              className="welcome-image"
-              src="/assets/portada-banos.png"
-              alt="Paisaje turístico de Baños de Agua Santa"
+              className="welcome-brand-mark"
+              src="/assets/icono_banos_tour.jpg"
+              alt=""
             />
-            <div className="welcome-body">
-              <span className="welcome-kicker">EXPLORA · DISFRUTA · DESCUBRE</span>
-              <h1>Bienvenido a BañosTour</h1>
-              <p>
-                Tu guía para descubrir cascadas, miradores, aventura y los
-                mejores lugares de Baños de Agua Santa.
-              </p>
-              <IonButton expand="block" onClick={() => history.push('/login')}>
-                Iniciar sesión
-              </IonButton>
-            </div>
+            <span><strong>Baños</strong>Tour</span>
+          </div>
+          <main className="welcome-hero">
+            <h1>{t('welcomeTitle').split('|').map((line) => <span key={line}>{line}<br /></span>)}</h1>
+            <p>{t('welcomeDescription').split('|').map((line) => <span key={line}>{line}<br /></span>)}</p>
+          </main>
+          <div className="welcome-action">
+            <IonButton expand="block" onClick={() => history.replace('/login')}>
+              {t('login')}
+            </IonButton>
           </div>
         </div>
       </IonContent>

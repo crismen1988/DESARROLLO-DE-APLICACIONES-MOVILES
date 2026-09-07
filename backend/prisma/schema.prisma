@@ -37,19 +37,107 @@ enum EstadoPuntoInteres {
   INACTIVO
 }
 
+enum EstadoEvento {
+  BORRADOR
+  PUBLICADO
+  CANCELADO
+}
+
+enum EstadoReporte {
+  PENDIENTE
+  EN_REVISION
+  RESUELTO
+  DESCARTADO
+}
+
+enum TipoCuenta {
+  TURISTA
+  PRESTADOR_TURISTICO
+}
+
+enum EstadoVerificacion {
+  NO_APLICA
+  PENDIENTE
+  APROBADO
+  RECHAZADO
+}
+
+enum DiaSemana {
+  LUNES
+  MARTES
+  MIERCOLES
+  JUEVES
+  VIERNES
+  SABADO
+  DOMINGO
+}
+
 model Usuario {
   id           Int      @id @default(autoincrement())
   correo       String   @unique @db.VarChar(180)
   nombre       String   @db.VarChar(120)
+  descripcion  String?  @db.VarChar(300)
+  fotoPerfil   String?  @map("foto_perfil") @db.Text
+  fechaNacimiento DateTime? @map("fecha_nacimiento") @db.Date
+  edad         Int?
+  paisOrigen   String?   @map("pais_origen") @db.VarChar(80)
   passwordHash String   @map("password_hash") @db.VarChar(255)
   rol          Rol      @default(TURISTA)
   activo       Boolean  @default(true)
+  proveedorVerificado Boolean @default(false) @map("proveedor_verificado")
+  tipoCuenta     TipoCuenta @default(TURISTA) @map("tipo_cuenta")
+  ruc            String?    @unique @db.VarChar(13)
+  estadoVerificacion EstadoVerificacion @default(NO_APLICA) @map("estado_verificacion")
+  verificadoEn   DateTime?  @map("verificado_en")
+  motivoRechazo  String?    @db.VarChar(500) @map("motivo_rechazo")
+  razonSocial    String?    @db.VarChar(180) @map("razon_social")
+  nombreComercial String?   @db.VarChar(150) @map("nombre_comercial")
+  telefono       String?    @db.VarChar(30)
+  direccion      String?    @db.VarChar(250)
+  ciudad         String?    @db.VarChar(80)
+  actividadTuristica String? @db.VarChar(180) @map("actividad_turistica")
+  sitioWeb       String?    @db.VarChar(2048) @map("sitio_web")
   creadoEn     DateTime @default(now()) @map("creado_en")
   actualizadoEn DateTime @updatedAt @map("actualizado_en")
 
   resenas Resena[]
+  refreshTokens RefreshToken[]
+  passwordResetTokens PasswordResetToken[]
+  favoritos Favorito[]
+  puntosPropios PuntoInteres[]
+  eventos Evento[]
+  reportes Reporte[]
 
   @@map("usuarios")
+}
+
+model RefreshToken {
+  id        Int       @id @default(autoincrement())
+  tokenHash String    @unique @map("token_hash") @db.VarChar(64)
+  usuarioId Int       @map("usuario_id")
+  expiraEn  DateTime  @map("expira_en")
+  revocadoEn DateTime? @map("revocado_en")
+  creadoEn  DateTime  @default(now()) @map("creado_en")
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId, revocadoEn])
+  @@map("refresh_tokens")
+}
+
+model PasswordResetToken {
+  id        Int       @id @default(autoincrement())
+  tokenHash String    @unique @map("token_hash") @db.VarChar(64)
+  usuarioId Int       @map("usuario_id")
+  expiraEn  DateTime  @map("expira_en")
+  usadoEn   DateTime? @map("usado_en")
+  creadoEn  DateTime  @default(now()) @map("creado_en")
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId, usadoEn])
+  @@index([expiraEn])
+  @@map("password_reset_tokens")
 }
 
 model PuntoInteres {
@@ -71,9 +159,18 @@ model PuntoInteres {
 
   categoria Categoria @relation(fields: [categoriaId], references: [id], onDelete: Restrict)
   resenas   Resena[]
+  favoritos Favorito[]
+  eventos   Evento[]
+  reportes  Reporte[]
+  horarios HorarioPuntoInteres[]
+  imagenes ImagenPuntoInteres[]
+  contacto ContactoPuntoInteres?
+  propietarioId Int? @map("propietario_id")
+  propietario Usuario? @relation(fields: [propietarioId], references: [id], onDelete: SetNull)
 
   @@index([categoriaId, estado])
   @@index([latitud, longitud])
+  @@index([propietarioId, estado])
   @@map("puntos_interes")
 }
 
@@ -92,4 +189,100 @@ model Resena {
   @@unique([usuarioId, puntoInteresId])
   @@index([puntoInteresId])
   @@map("resenas")
+}
+
+model Favorito {
+  usuarioId      Int      @map("usuario_id")
+  puntoInteresId Int      @map("punto_interes_id")
+  agregadoEn     DateTime @default(now()) @map("agregado_en")
+
+  usuario      Usuario      @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  puntoInteres PuntoInteres @relation(fields: [puntoInteresId], references: [id], onDelete: Cascade)
+
+  @@id([usuarioId, puntoInteresId])
+  @@index([puntoInteresId])
+  @@map("favoritos")
+}
+
+model Evento {
+  id             Int          @id @default(autoincrement())
+  titulo         String       @db.VarChar(150)
+  descripcion    String       @db.Text
+  fechaInicio    DateTime     @map("fecha_inicio")
+  fechaFin       DateTime     @map("fecha_fin")
+  direccion      String?      @db.VarChar(250)
+  latitud        Float?
+  longitud       Float?
+  estado         EstadoEvento @default(BORRADOR)
+  creadorId      Int          @map("creador_id")
+  puntoInteresId Int?         @map("punto_interes_id")
+  creadoEn       DateTime     @default(now()) @map("creado_en")
+  actualizadoEn  DateTime     @updatedAt @map("actualizado_en")
+
+  creador      Usuario       @relation(fields: [creadorId], references: [id], onDelete: Cascade)
+  puntoInteres PuntoInteres? @relation(fields: [puntoInteresId], references: [id], onDelete: SetNull)
+
+  @@index([estado, fechaInicio, fechaFin])
+  @@index([puntoInteresId])
+  @@map("eventos")
+}
+
+model Reporte {
+  id             Int           @id @default(autoincrement())
+  motivo         String        @db.VarChar(100)
+  descripcion    String?       @db.VarChar(500)
+  estado         EstadoReporte @default(PENDIENTE)
+  usuarioId      Int           @map("usuario_id")
+  puntoInteresId Int           @map("punto_interes_id")
+  creadoEn       DateTime      @default(now()) @map("creado_en")
+  actualizadoEn  DateTime      @updatedAt @map("actualizado_en")
+
+  usuario      Usuario      @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  puntoInteres PuntoInteres @relation(fields: [puntoInteresId], references: [id], onDelete: Cascade)
+
+  @@index([estado, creadoEn])
+  @@index([puntoInteresId])
+  @@map("reportes")
+}
+
+model HorarioPuntoInteres {
+  id             Int        @id @default(autoincrement())
+  puntoInteresId Int        @map("punto_interes_id")
+  dia            DiaSemana
+  apertura       String     @db.VarChar(5)
+  cierre         String     @db.VarChar(5)
+  cerrado        Boolean    @default(false)
+
+  puntoInteres PuntoInteres @relation(fields: [puntoInteresId], references: [id], onDelete: Cascade)
+
+  @@unique([puntoInteresId, dia])
+  @@map("horarios_puntos_interes")
+}
+
+model ImagenPuntoInteres {
+  id             Int      @id @default(autoincrement())
+  puntoInteresId Int      @map("punto_interes_id")
+  url            String   @db.VarChar(2048)
+  textoAlternativo String? @db.VarChar(200) @map("texto_alternativo")
+  orden          Int      @default(0)
+  creadaEn       DateTime @default(now()) @map("creada_en")
+
+  puntoInteres PuntoInteres @relation(fields: [puntoInteresId], references: [id], onDelete: Cascade)
+
+  @@index([puntoInteresId, orden])
+  @@map("imagenes_puntos_interes")
+}
+
+model ContactoPuntoInteres {
+  id             Int      @id @default(autoincrement())
+  puntoInteresId Int      @unique @map("punto_interes_id")
+  telefono       String?  @db.VarChar(30)
+  whatsapp       String?  @db.VarChar(30)
+  sitioWeb       String?  @db.VarChar(2048) @map("sitio_web")
+  contactoEmergencia String? @db.VarChar(150) @map("contacto_emergencia")
+  telefonoEmergencia String? @db.VarChar(30) @map("telefono_emergencia")
+
+  puntoInteres PuntoInteres @relation(fields: [puntoInteresId], references: [id], onDelete: Cascade)
+
+  @@map("contactos_puntos_interes")
 }

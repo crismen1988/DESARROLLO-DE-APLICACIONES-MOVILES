@@ -10,6 +10,11 @@ export default defineConfig({
     react(),
     legacy()
   ],
+  server: {
+    watch: {
+      ignored: ['**/android/**'],
+    },
+  },
   test: {
     globals: true,
     environment: 'jsdom',

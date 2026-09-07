@@ -1,0 +1,1 @@
+ALTER TABLE "usuarios" ADD COLUMN "proveedor_verificado" BOOLEAN NOT NULL DEFAULT false;
