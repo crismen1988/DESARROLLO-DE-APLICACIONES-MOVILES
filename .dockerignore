@@ -1,0 +1,16 @@
+node_modules
+.npm-cache
+.gradle-user
+dist
+.git
+.env*
+.agents
+.codex
+android
+.vscode
+coverage
+build
+*.log
+npm-debug.log*
+.DS_Store
+*.local

@@ -1,0 +1,11 @@
+{
+  "name": "BañosTour",
+  "description": "Aplicación turística inteligente para Baños de Agua Santa con roles de turista, operador y administrador, mapas, geolocalización, cámara y reservas.",
+  "requestFramePermissions": [
+    "camera",
+    "geolocation"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

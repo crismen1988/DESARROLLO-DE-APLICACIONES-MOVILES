@@ -1,0 +1,196 @@
+// Prisma Schema: BañosTour Platform
+// Database: PostgreSQL 16
+// Caching: Redis 7.2 Cluster
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Current API state is persisted as a single document. The relational models
+// below describe a future normalization and are not used by the controllers.
+model AppState {
+  id        String   @id
+  data      Json
+  updatedAt DateTime @updatedAt
+}
+
+enum Role {
+  TURISTA
+  OPERADOR
+  ADMIN
+}
+
+enum BookingStatus {
+  CONFIRMADA
+  PENDIENTE
+  COMPLETADA
+  CANCELADA
+}
+
+enum TourCategory {
+  AVENTURA
+  CASCADAS
+  RELAX
+  NATURALEZA
+  CULTURA
+}
+
+enum PlaceCategory {
+  COMIDA
+  HOTEL
+  HOSTAL
+  HOSTERIA
+  TERMAS
+}
+
+model User {
+  id               String         @id @default(uuid())
+  name             String
+  email            String         @unique
+  passwordHash     String
+  role             Role           @default(TURISTA)
+  phone            String?
+  origin           String?
+  businessType     String?
+  ruc              String?        @unique
+  businessRegistration String?
+  department       String?
+  verified         Boolean        @default(false)
+  biometricEnabled Boolean        @default(true)
+  biometricKey     String?
+  joinedDate       DateTime       @default(now())
+  
+  // Relations
+  tours            Tour[]         @relation("OperatorTours")
+  places           Place[]        @relation("OperatorPlaces")
+  bookings         Booking[]      @relation("UserBookings")
+  sentMessages     ChatMessage[]  @relation("SentMessages")
+  receivedMessages ChatMessage[]  @relation("ReceivedMessages")
+  reviews          Review[]
+
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  @@index([email])
+  @@index([role])
+}
+
+model Tour {
+  id            String         @id @default(uuid())
+  title         String
+  operatorId    String
+  operator      User           @relation("OperatorTours", fields: [operatorId], references: [id])
+  category      TourCategory
+  price         Decimal        @db.Decimal(10, 2)
+  duration      String
+  difficulty    String
+  rating        Float          @default(5.0)
+  reviewsCount  Int            @default(0)
+  description   String         @db.Text
+  included      String[]
+  imageUrl      String
+  latitude      Float
+  longitude     Float
+  availableDays String[]
+  maxCapacity   Int            @default(20)
+  currentBooked Int            @default(0)
+  isOpen        Boolean        @default(true)
+
+  bookings      Booking[]
+  reviews       Review[]
+
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@index([category])
+  @@index([operatorId])
+}
+
+model Place {
+  id          String        @id @default(uuid())
+  name        String
+  category    PlaceCategory
+  rating      Float         @default(5.0)
+  priceRange  String        @default("$$")
+  address     String
+  latitude    Float
+  longitude   Float
+  description String        @db.Text
+  imageUrl    String
+  phone       String
+  tags        String[]
+  operatorId  String?
+  operator    User?         @relation("OperatorPlaces", fields: [operatorId], references: [id])
+  verified    Boolean       @default(true)
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([category])
+}
+
+model Booking {
+  id                String        @id @default(uuid())
+  tourId            String
+  tour              Tour          @relation(fields: [tourId], references: [id])
+  userId            String
+  user              User          @relation("UserBookings", fields: [userId], references: [id])
+  date              DateTime
+  participants      Int           @default(1)
+  totalPrice        Decimal       @db.Decimal(10, 2)
+  status            BookingStatus @default(CONFIRMADA)
+  qrCode            String        @unique
+  encryptedPassport String?       @db.Text
+  passportIv        String?
+
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([tourId])
+  @@index([qrCode])
+}
+
+model ChatMessage {
+  id          String   @id @default(uuid())
+  senderId    String
+  sender      User     @relation("SentMessages", fields: [senderId], references: [id])
+  recipientId String
+  recipient   User     @relation("ReceivedMessages", fields: [recipientId], references: [id])
+  tourId      String?
+  message     String   @db.Text
+  timestamp   DateTime @default(now())
+
+  @@index([senderId, recipientId])
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  tourId    String
+  tour      Tour     @relation(fields: [tourId], references: [id])
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  rating    Int
+  comment   String   @db.Text
+  photoUrl  String?
+  createdAt DateTime @default(now())
+
+  @@index([tourId])
+}
+
+model PushNotification {
+  id         String   @id @default(uuid())
+  title      String
+  body       String
+  targetRole String   @default("todos")
+  type       String   @default("alerta")
+  timestamp  DateTime @default(now())
+  read       Boolean  @default(false)
+
+  @@index([targetRole])
+}
