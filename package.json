@@ -1,0 +1,43 @@
+{
+  "name": "banostour-frontend",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "tsc --noEmit",
+    "cap:sync": "npx cap sync android",
+    "cap:run": "npx cap run android",
+    "cap:open": "npx cap open android"
+  },
+  "dependencies": {
+    "@aparajita/capacitor-biometric-auth": "^10.0.0",
+    "@capacitor-mlkit/barcode-scanning": "^8.2.1",
+    "@capacitor/android": "^8.5.2",
+    "@capacitor/app": "^8.1.1",
+    "@capacitor/camera": "^8.2.4",
+    "@capacitor/core": "^8.5.2",
+    "@capacitor/geolocation": "^8.2.2",
+    "@capacitor/push-notifications": "^8.1.2",
+    "@ionic/react": "^8.8.19",
+    "@ionic/storage": "^4.0.0",
+    "@types/leaflet": "^1.9.22",
+    "leaflet": "^1.9.4",
+    "lucide-react": "^0.546.0",
+    "qrcode-generator": "^2.0.4",
+    "react": "^19.0.1",
+    "react-dom": "^19.0.1"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.5.2",
+    "@tailwindcss/vite": "^4.1.14",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^5.0.4",
+    "tailwindcss": "^4.1.14",
+    "typescript": "~5.8.2",
+    "vite": "^6.2.3"
+  }
+}
